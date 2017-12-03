@@ -552,7 +552,7 @@ function loadTexture(path, triangle){
     var texture = gl.createTexture();
     texture.image = new Image();
     texture.image.crossOrigin = 'anonymous';
-    texture.image.src = "https://ncsucgclass.github.io/prog3/"+path;
+    texture.image.src = "https://rishabh2693.github.io/WebGL/"+path;
     texture.image.onload = function() {
         handleLoadedTexture(texture);
       }
