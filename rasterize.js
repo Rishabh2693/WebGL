@@ -277,8 +277,8 @@ function mouseMove(event){
    
     var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
-    x = 1 - (x/512);
-    y = 1 - (y/512); 
+    x = 1.7 - (x/213);
+    y = 1.7 - (y/213); 
    
     if(lastX == null||lastY ==null)
     {
@@ -304,6 +304,20 @@ function mouseMove(event){
     
 }
 
+function updateSpaceMissile(){
+
+}
+
+var downMissiles = [];
+function startRandomMissile(){
+    if(downMissiles.length==0)
+        for(var i = 0; i< numEllipsoids;i++){
+      //      console.log(inputEllipsoids);
+            if(inputEllipsoids[i].type == 2)
+                downMissiles.push(inputEllipsoids[i]);
+        } 
+}
+
 function updateMssileLocation(){
     //console.log("here");
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
@@ -312,7 +326,7 @@ function updateMssileLocation(){
    
     function translateModel(offset) {
         vec3.add(setModel.translation,setModel.translation,offset);
-        console.log(offset);
+     //   console.log(offset);
     } // end translate model
     var setModel = null;
     for(var i = 0; i< numEllipsoids;i++){
@@ -335,6 +349,21 @@ var over = false;
 
 
 function mouseUp(event){
+
+    var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
+    lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
+    viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
+   
+    function rotateModel(axis,angle) {
+        if (upMissiles[0] != null) {
+            var newRotation = mat4.create();
+
+            mat4.fromRotation(newRotation,angle,axis); // get a rotation matrix around passed axis
+            vec3.transformMat4(upMissiles[0].xAxis,upMissiles[0].xAxis,newRotation); // rotate model x axis tip
+            vec3.transformMat4(upMissiles[0].yAxis,upMissiles[0].yAxis,newRotation); // rotate model y axis tip
+        } // end if there is a highlighted model
+    } // end rotate model
+    
     if(upMissiles.length==0&&!over){
         for(var i = 0; i< numEllipsoids;i++){
           //  console.log(inputEllipsoids);
@@ -342,16 +371,25 @@ function mouseUp(event){
                 upMissiles.push(inputEllipsoids[i]);
         }  
     }
+    console.log(upMissiles[0].translation);
     var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
-    x = 1 - (x/256);
-    y = 1 - (y/256); 
-
-    upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.001;
-    upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.001;
+    x = 1.7 - (x/213);
+    y = 1.7 - (y/213);  
+    upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.01;
+    upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.01;
+    var angle = (-1*Math.atan(upMissiles[0].velocity_y/ upMissiles[0].velocity_x))+Math.PI/2;
+    console.log(angle);
+    if(angle>Math.PI/2){
+        angle+=Math.PI;
+    }
+    console.log(angle);
+    rotateModel(lookAt,angle);
     upMissiles[0].goal_x = x;
     upMissiles[0].goal_y = y;
     upMissiles.shift();
+    if(upMissiles.length == 0)
+        over = true;
 }
 var imageCanvas = null;
 // set up the webGL environment
