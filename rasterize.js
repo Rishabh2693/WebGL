@@ -304,18 +304,49 @@ function mouseMove(event){
     
 }
 
-function updateSpaceMissile(){
-
-}
-
 var downMissiles = [];
+var frameCount = 0;
+var dOver = false;
 function startRandomMissile(){
-    if(downMissiles.length==0)
+    frameCount++;
+    var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
+    lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
+    viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
+   
+    function rotateModel(axis,angle,num) {
+        if (downMissiles[num] != null) {
+            var newRotation = mat4.create();
+
+            mat4.fromRotation(newRotation,angle,axis); // get a rotation matrix around passed axis
+            vec3.transformMat4(downMissiles[num].xAxis,downMissiles[num].xAxis,newRotation); // rotate model x axis tip
+            vec3.transformMat4(downMissiles[num].yAxis,downMissiles[num].yAxis,newRotation); // rotate model y axis tip
+        } // end if there is a highlighted model
+    } // end rotate model
+    
+    if(downMissiles.length==0&&!dOver)
         for(var i = 0; i< numEllipsoids;i++){
       //      console.log(inputEllipsoids);
             if(inputEllipsoids[i].type == 2)
                 downMissiles.push(inputEllipsoids[i]);
         } 
+    if(frameCount%50==0&&!dOver){
+        var j = Math.floor(Math.random()*downMissiles.length);
+        downMissiles[j].velocity_x = (downMissiles[j].target_x - downMissiles[j].x)*0.005;
+        downMissiles[j].velocity_y = (0 - downMissiles[j].y)*0.005;
+        downMissiles[j].goal_x = downMissiles[j].target_x;
+        downMissiles[j].goal_y = 0;
+        var angle = (-1*Math.atan(downMissiles[j].velocity_y/ downMissiles[j].velocity_x))+Math.PI/2;
+       
+        if(angle>Math.PI/2){
+            angle+=Math.PI;
+        }
+       
+        rotateModel(lookAt,angle,j);
+        downMissiles.splice(j,1); ;
+        if(downMissiles.length == 0)
+            dOver = true;
+    }    
+
 }
 
 function updateMssileLocation(){
@@ -331,7 +362,7 @@ function updateMssileLocation(){
     var setModel = null;
     for(var i = 0; i< numEllipsoids;i++){
         //  console.log(inputEllipsoids);
-          if(inputEllipsoids[i].type == 1&&inputEllipsoids[i].velocity_x&&
+          if(inputEllipsoids[i].velocity_x&&
             !((inputEllipsoids[i].goal_x-inputEllipsoids[i].x < inputEllipsoids[i].translation[0]+0.03)&&
             (inputEllipsoids[i].goal_x-inputEllipsoids[i].x > inputEllipsoids[i].translation[0]-0.03)&&
             (inputEllipsoids[i].goal_y-inputEllipsoids[i].y < inputEllipsoids[i].translation[1]+0.03)&&
@@ -379,11 +410,11 @@ function mouseUp(event){
     upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.01;
     upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.01;
     var angle = (-1*Math.atan(upMissiles[0].velocity_y/ upMissiles[0].velocity_x))+Math.PI/2;
-    console.log(angle);
+  
     if(angle>Math.PI/2){
         angle+=Math.PI;
     }
-    console.log(angle);
+  
     rotateModel(lookAt,angle);
     upMissiles[0].goal_x = x;
     upMissiles[0].goal_y = y;
@@ -892,6 +923,7 @@ function Value(dist,type,idx,alpha){
 // render the loaded model
 function renderModels() {
     updateMssileLocation();
+    startRandomMissile()
     var Models = [];
     for(var i = 0; i<numTriangleSets;i++ ){
         var value = new Value(getDotProd1(inputTriangles[i]),"tri",i,inputTriangles[i].material.alpha);
