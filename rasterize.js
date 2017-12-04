@@ -255,13 +255,14 @@ function handleKeyDown(event) {
     } // end switch
 } // end handleKeyDown
 var crosshair = null
+var lastX = null;
+var lastY = null;
 function mouseMove(event){
-    console.log("im here 1");
+   // console.log("im here 1");
    
     
     function translateModel(offset) {
-        if (handleKeyDown.modelOn != null)
-            vec3.add(handleKeyDown.modelOn.translation,handleKeyDown.modelOn.translation,offset);
+        vec3.add(crosshair.translation,crosshair.translation,offset);
     } // end translate model
 
     if(crosshair == null){
@@ -273,14 +274,30 @@ function mouseMove(event){
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
     viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
-    
+   
     var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
     x = 1 - (x/512);
     y = 1 - (y/512); 
-    
-    translateModel(vec3.scale(temp,viewRight, -x))
-    translateModel(vec3.scale(temp,Up, y))
+    console.log(x);
+    if(lastX == null||lastY ==null)
+    {
+      
+            translateModel(vec3.scale(temp,viewRight, -x));
+            translateModel(vec3.scale(temp,Up, y));
+        
+    }
+    else{
+       
+            translateModel(vec3.scale(temp,viewRight, -x+lastX));
+            translateModel(vec3.scale(temp,Up, y-lastY));
+      
+    }
+    lastX = x;
+    lastY = y;
+   // console.log(crosshair);
+    console.log(lastX + " " +lastY +" "+x);
+    console.log(crosshair.translation);
         // end if there is a highlighted model
    // end rotate model
     
