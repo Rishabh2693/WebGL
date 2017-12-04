@@ -305,20 +305,27 @@ function mouseMove(event){
 }
 
 function updateMssileLocation(){
+    //console.log("here");
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
     viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
    
     function translateModel(offset) {
         vec3.add(setModel.translation,setModel.translation,offset);
+        console.log(offset);
     } // end translate model
     var setModel = null;
     for(var i = 0; i< numEllipsoids;i++){
         //  console.log(inputEllipsoids);
-          if(inputEllipsoids[i].type == 1){
+          if(inputEllipsoids[i].type == 1&&inputEllipsoids[i].velocity_x&&
+            !((inputEllipsoids[i].goal_x-inputEllipsoids[i].x < inputEllipsoids[i].translation[0]+0.03)&&
+            (inputEllipsoids[i].goal_x-inputEllipsoids[i].x > inputEllipsoids[i].translation[0]-0.03)&&
+            (inputEllipsoids[i].goal_y-inputEllipsoids[i].y < inputEllipsoids[i].translation[1]+0.03)&&
+            (inputEllipsoids[i].goal_y-inputEllipsoids[i].y > inputEllipsoids[i].translation[1]-0.03))){
               setModel = (inputEllipsoids[i]);
-              translateModel(temp,viewRight,-inputEllipsoids[i].velocity_x);
-              translateModel(temp,Up,inputEllipsoids[i].velocity_y);
+             // console.log(-inputEllipsoids[i].velocity_x + " " + inputEllipsoids[i].velocity_y);
+              translateModel(vec3.scale(temp,viewRight,-inputEllipsoids[i].velocity_x));
+              translateModel(vec3.scale(temp,Up,inputEllipsoids[i].velocity_y));
           }
       }  
 }
@@ -335,17 +342,15 @@ function mouseUp(event){
                 upMissiles.push(inputEllipsoids[i]);
         }  
     }
-    console.log("size"+upMissiles.length);
     var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
-    x = 1 - (x/512);
-    y = 1 - (y/512); 
+    x = 1 - (x/256);
+    y = 1 - (y/256); 
 
-    upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.1;
-    upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.1;
+    upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.001;
+    upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.001;
     upMissiles[0].goal_x = x;
     upMissiles[0].goal_y = y;
-    console.log(upMissiles[0]);
     upMissiles.shift();
 }
 var imageCanvas = null;
@@ -848,6 +853,7 @@ function Value(dist,type,idx,alpha){
 }
 // render the loaded model
 function renderModels() {
+    updateMssileLocation();
     var Models = [];
     for(var i = 0; i<numTriangleSets;i++ ){
         var value = new Value(getDotProd1(inputTriangles[i]),"tri",i,inputTriangles[i].material.alpha);
