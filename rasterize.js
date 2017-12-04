@@ -254,15 +254,55 @@ function handleKeyDown(event) {
             break;
     } // end switch
 } // end handleKeyDown
+var crosshair = null
+function mouseMove(event){
+    console.log("im here 1");
+   
+    
+    function translateModel(offset) {
+        if (handleKeyDown.modelOn != null)
+            vec3.add(handleKeyDown.modelOn.translation,handleKeyDown.modelOn.translation,offset);
+    } // end translate model
 
+    if(crosshair == null){
+        for(var i = 0; i< numTriangleSets;i++){
+            if(inputTriangles[i].type == 4)
+                crosshair = inputTriangles[i];
+        }  
+    }
+    var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
+    lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
+    viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
+    
+    var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
+    var y = event.clientY - imageCanvas.getBoundingClientRect().top;
+    x = 1 - (x/512);
+    y = 1 - (y/512); 
+    
+    translateModel(vec3.scale(temp,viewRight, -x))
+    translateModel(vec3.scale(temp,Up, y))
+        // end if there is a highlighted model
+   // end rotate model
+    
+    // set up needed view params
+  
+   
+    
+}
+function mouseUp(){
+    console.log("im here2");
+}
+var imageCanvas = null;
 // set up the webGL environment
 function setupWebGL() {
     
     // Set up keys
     document.onkeydown = handleKeyDown; // call this when key pressed
+    document.onmousemove = mouseMove;
+    document.onmouseup = mouseUp;
 
       // Get the image canvas, render an image in it
-     var imageCanvas = document.getElementById("myImageCanvas"); // create a 2d canvas
+     imageCanvas = document.getElementById("myImageCanvas"); // create a 2d canvas
       var cw = imageCanvas.width, ch = imageCanvas.height; 
       imageContext = imageCanvas.getContext("2d"); 
      var bkgdImage = new Image(); 
@@ -538,7 +578,7 @@ function loadModels() {
                     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(ellipsoidModel.triangles),gl.STATIC_DRAW); // data in
                 } // end for each ellipsoid
                 
-                viewDelta = vec3.length(vec3.subtract(temp,maxCorner,minCorner)) / 100; // set global
+                viewDelta = vec3.length(vec3.subtract(temp,maxCorner,minCorner)) / 500; // set global
             } // end if ellipsoid file loaded
         } // end if triangle file loaded
     } // end try 
