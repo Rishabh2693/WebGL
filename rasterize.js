@@ -331,8 +331,8 @@ function startRandomMissile(){
         } 
     if(frameCount%50==0&&!dOver){
         var j = Math.floor(Math.random()*downMissiles.length);
-        downMissiles[j].velocity_x = (downMissiles[j].target_x - downMissiles[j].x)*0.005;
-        downMissiles[j].velocity_y = (0 - downMissiles[j].y)*0.005;
+        downMissiles[j].velocity_x = (downMissiles[j].target_x - downMissiles[j].x)*0.001;
+        downMissiles[j].velocity_y = (0 - downMissiles[j].y)*0.001;
         downMissiles[j].goal_x = downMissiles[j].target_x;
         downMissiles[j].goal_y = 0;
         var angle = (-1*Math.atan(downMissiles[j].velocity_y/ downMissiles[j].velocity_x))+Math.PI/2;
@@ -371,6 +371,17 @@ function updateMssileLocation(){
              // console.log(-inputEllipsoids[i].velocity_x + " " + inputEllipsoids[i].velocity_y);
               translateModel(vec3.scale(temp,viewRight,-inputEllipsoids[i].velocity_x));
               translateModel(vec3.scale(temp,Up,inputEllipsoids[i].velocity_y));
+          }else if(inputEllipsoids[i].velocity_x){
+              if(!inputEllipsoids[i].timer){
+                inputEllipsoids[i].timer = 0;
+                inputEllipsoids[i].texture = "fire.jpg";
+              }
+              inputEllipsoids[i].a = timer*.0003;
+              inputEllipsoids[i].b = timer*.0003;
+              inputEllipsoids[i].c = timer*.0003;
+              if(inputEllipsoids[i].timer>400){
+                inputEllipsoids.splice(i,1);
+              }
           }
       }  
 }
@@ -407,8 +418,8 @@ function mouseUp(event){
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
     x = 1.7 - (x/213);
     y = 1.7 - (y/213);  
-    upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.01;
-    upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.01;
+    upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.02;
+    upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.02;
     var angle = (-1*Math.atan(upMissiles[0].velocity_y/ upMissiles[0].velocity_x))+Math.PI/2;
   
     if(angle>Math.PI/2){
