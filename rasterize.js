@@ -399,7 +399,11 @@ function updateMssileLocation(){
     } // end translate model
     var setModel = null;
     for(var i = 0; i< numEllipsoids;i++){
-          //if(inputEllipsoids[i].temp)
+          if(inputEllipsoids[i].temp){
+              inputEllipsoids[i].timer++;
+              if(inputEllipsoids[i].timer > 400)
+              inputEllipsoids[i].invisible = true;
+          }
            // inputEllipsoids[i].invisible = true;
         //  console.log(inputEllipsoids);
           if(inputEllipsoids[i].velocity_x&&
@@ -415,23 +419,26 @@ function updateMssileLocation(){
             if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
               }
+              if(inputEllipsoids[i].timer%25==0){
               inputEllipsoids.push({
                 x: inputEllipsoids[i].goal_x,
                 y: inputEllipsoids[i].goal_y,
                 z: 0.7,
-                a: inputEllipsoids[i].timer*.0003,
-                b: inputEllipsoids[i].timer*.0003,
-                c: inputEllipsoids[i].timer*.0003,
+                a: inputEllipsoids[i].timer*.0005,
+                b: inputEllipsoids[i].timer*.0005,
+                c: inputEllipsoids[i].timer*.0005,
+                timer: inputEllipsoids[i].timer,
                 texture: "fire.jpg",
                 temp: true,
-                ambient: [0.1,0.1,0.1],
-                diffuse: [0.0,0.0,0.6],
+                ambient: [0.8,0.8,0.1],
+                diffuse: [0.8,0.8,0],
                 specular: [0.3,0.3,0.3],
                 n:5, 
                 alpha: 1
               } ); 
               numEllipsoids++;
               loadNewEllipsoid(numEllipsoids-1);
+            }
               inputEllipsoids[i].timer+=1;
               if(inputEllipsoids[i].timer>400){
                 inputEllipsoids[i].invisible = true;
