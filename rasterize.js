@@ -349,6 +349,44 @@ function startRandomMissile(){
 
 }
 
+function loadNewEllipsoid(whichEllipsoid){
+    var maxCorner = vec3.fromValues(Number.MIN_VALUE,Number.MIN_VALUE,Number.MIN_VALUE); // bbox corner
+    var minCorner = vec3.fromValues(Number.MAX_VALUE,Number.MAX_VALUE,Number.MAX_VALUE); // other corner
+    var minXYZ = vec3.create(), maxXYZ = vec3.create();
+    ellipsoid = inputEllipsoids[whichEllipsoid];
+    ellipsoid.on = false; // ellipsoids begin without highlight
+    ellipsoid.translation = vec3.fromValues(0,0,0); // ellipsoids begin without translation
+    ellipsoid.xAxis = vec3.fromValues(1,0,0); // ellipsoid X axis
+    ellipsoid.yAxis = vec3.fromValues(0,1,0); // ellipsoid Y axis 
+    ellipsoid.center = vec3.fromValues(ellipsoid.x,ellipsoid.y,ellipsoid.z); // locate ellipsoid ctr
+    vec3.set(minXYZ,ellipsoid.x-ellipsoid.a,ellipsoid.y-ellipsoid.b,ellipsoid.z-ellipsoid.c); 
+    vec3.set(maxXYZ,ellipsoid.x+ellipsoid.a,ellipsoid.y+ellipsoid.b,ellipsoid.z+ellipsoid.c); 
+    vec3.min(minCorner,minCorner,minXYZ); // update world bbox min corner
+    vec3.max(maxCorner,maxCorner,maxXYZ); // update world bbox max corner
+    loadTexture(inputEllipsoids[whichEllipsoid].texture,false);
+    // make the ellipsoid model
+    ellipsoidModel = makeEllipsoid(ellipsoid,32);
+   
+    // send the ellipsoid vertex coords and normals to webGL
+    vertexBuffers.push(gl.createBuffer()); // init empty webgl ellipsoid vertex coord buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffers[vertexBuffers.length-1]); // activate that buffer
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(ellipsoidModel.vertices),gl.STATIC_DRAW); // data in
+    normalBuffers.push(gl.createBuffer()); // init empty webgl ellipsoid vertex normal buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[normalBuffers.length-1]); // activate that buffer
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(ellipsoidModel.normals),gl.STATIC_DRAW); // data in
+    vertexTextureCoordBuffer.push(gl.createBuffer()); // init empty webgl sphere vertex normal buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER,vertexTextureCoordBuffer[vertexTextureCoordBuffer.length-1]); // activate that buffer
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(ellipsoidModel.texture),gl.STATIC_DRAW); // data in
+
+    triSetSizes.push(ellipsoidModel.triangles.length);
+
+    // send the triangle indices to webGL
+    triangleBuffers.push(gl.createBuffer()); // init empty triangle index buffer
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triangleBuffers[triangleBuffers.length-1]); // activate that buffer
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(ellipsoidModel.triangles),gl.STATIC_DRAW); // data in
+
+}
+
 function updateMssileLocation(){
     //console.log("here");
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
@@ -361,6 +399,8 @@ function updateMssileLocation(){
     } // end translate model
     var setModel = null;
     for(var i = 0; i< numEllipsoids;i++){
+          //if(inputEllipsoids[i].temp)
+           // inputEllipsoids[i].invisible = true;
         //  console.log(inputEllipsoids);
           if(inputEllipsoids[i].velocity_x&&
             !((inputEllipsoids[i].goal_x-inputEllipsoids[i].x < inputEllipsoids[i].translation[0]+0.03)&&
@@ -372,15 +412,29 @@ function updateMssileLocation(){
               translateModel(vec3.scale(temp,viewRight,-inputEllipsoids[i].velocity_x));
               translateModel(vec3.scale(temp,Up,inputEllipsoids[i].velocity_y));
           }else if(inputEllipsoids[i].velocity_x){
-              if(!inputEllipsoids[i].timer){
+            if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
-                inputEllipsoids[i].texture = "fire.jpg";
               }
-              inputEllipsoids[i].a = timer*.0003;
-              inputEllipsoids[i].b = timer*.0003;
-              inputEllipsoids[i].c = timer*.0003;
+              inputEllipsoids.push({
+                x: inputEllipsoids[i].goal_x,
+                y: inputEllipsoids[i].goal_y,
+                z: 0.7,
+                a: inputEllipsoids[i].timer*.0003,
+                b: inputEllipsoids[i].timer*.0003,
+                c: inputEllipsoids[i].timer*.0003,
+                texture: "fire.jpg",
+                temp: true,
+                ambient: [0.1,0.1,0.1],
+                diffuse: [0.0,0.0,0.6],
+                specular: [0.3,0.3,0.3],
+                n:5, 
+                alpha: 1
+              } ); 
+              numEllipsoids++;
+              loadNewEllipsoid(numEllipsoids-1);
+              inputEllipsoids[i].timer+=1;
               if(inputEllipsoids[i].timer>400){
-                inputEllipsoids.splice(i,1);
+                inputEllipsoids[i].invisible = true;
               }
           }
       }  
@@ -413,7 +467,6 @@ function mouseUp(event){
                 upMissiles.push(inputEllipsoids[i]);
         }  
     }
-    console.log(upMissiles[0].translation);
     var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
     x = 1.7 - (x/213);
@@ -482,119 +535,121 @@ function getDotProd2(modelVal){
     return  (Eye[0]-modelVal[0])*(Eye[0]-Center[0])+(Eye[1]-modelVal[1])*(Eye[1]-Center[1])+(Eye[2]-modelVal[2])*(Eye[2]-Center[2]);
 }
 
+function makeEllipsoid(currEllipsoid,numLongSteps) {
+    
+            try {
+                if (numLongSteps % 2 != 0)
+                    throw "in makeSphere: uneven number of longitude steps!";
+                else if (numLongSteps < 4)
+                    throw "in makeSphere: number of longitude steps too small!";
+                else { // good number longitude steps
+                
+                    
+                    // make vertices
+                    var ellipsoidVertices = [0,-1,0]; // vertices to return, init to south pole
+                    var angleIncr = (Math.PI+Math.PI) / numLongSteps; // angular increment 
+                    var latLimitAngle = angleIncr * (Math.floor(numLongSteps/4)-1); // start/end lat angle
+                    var latRadius, latY; // radius and Y at current latitude
+                    var u, v;
+                    var ellipsoidTextureCoords = [0,-1];
+                    for (var latAngle=-latLimitAngle; latAngle<=latLimitAngle; latAngle+=angleIncr) {
+                        latRadius = Math.cos(latAngle); // radius of current latitude
+                        latY = Math.sin(latAngle); // height at current latitude
+                        for (var longAngle=0; longAngle<=2*Math.PI+angleIncr; longAngle+=angleIncr){ // for each long
+                            ellipsoidVertices.push(latRadius*Math.sin(longAngle),latY,latRadius*Math.cos(longAngle));
+                            u = (longAngle / (2*Math.PI));
+                            v = (Math.PI/2 + latAngle)/ Math.PI;
+                            ellipsoidTextureCoords.push(u, v);  
+                        }
+                    } // end for each latitude
+                    
+                    ellipsoidTextureCoords.push(0,1);
+                    ellipsoidVertices.push(0,1,0); // add north pole
+                    ellipsoidVertices = ellipsoidVertices.map(function(val,idx) { // position and scale ellipsoid
+                        switch (idx % 3) {
+                            case 0: // x
+                                return(val*currEllipsoid.a+currEllipsoid.x);
+                            case 1: // y
+                                return(val*currEllipsoid.b+currEllipsoid.y);
+                            case 2: // z
+                                return(val*currEllipsoid.c+currEllipsoid.z);
+                        } // end switch
+                    }); 
+    
+                    // make normals using the ellipsoid gradient equation
+                    // resulting normals are unnormalized: we rely on shaders to normalize
+                    var ellipsoidNormals = ellipsoidVertices.slice(); // start with a copy of the transformed verts
+                    ellipsoidNormals = ellipsoidNormals.map(function(val,idx) { // calculate each normal
+                        switch (idx % 3) {
+                            case 0: // x
+                                return(2/(currEllipsoid.a*currEllipsoid.a) * (val-currEllipsoid.x));
+                            case 1: // y
+                                return(2/(currEllipsoid.b*currEllipsoid.b) * (val-currEllipsoid.y));
+                            case 2: // z
+                                return(2/(currEllipsoid.c*currEllipsoid.c) * (val-currEllipsoid.z));
+                        } // end switch
+                    }); 
+                    
+                    // make triangles, from south pole to middle latitudes to north pole
+                    var ellipsoidTriangles = []; // triangles to return
+                    for (var whichLong=1; whichLong<numLongSteps; whichLong++) // south pole
+                        ellipsoidTriangles.push(0,whichLong,whichLong+1);
+                    ellipsoidTriangles.push(0,numLongSteps,1); // longitude wrap tri
+                    var llVertex; // lower left vertex in the current quad
+                    for (var whichLat=0; whichLat<(numLongSteps/2 - 2); whichLat++) { // middle lats
+                        for (var whichLong=0; whichLong<numLongSteps-1; whichLong++) {
+                            llVertex = whichLat*numLongSteps + whichLong + 1;
+                            ellipsoidTriangles.push(llVertex,llVertex+numLongSteps,llVertex+numLongSteps+1);
+                            ellipsoidTriangles.push(llVertex,llVertex+numLongSteps+1,llVertex+1);
+                        } // end for each longitude
+                        ellipsoidTriangles.push(llVertex+1,llVertex+numLongSteps+1,llVertex+2);
+                        ellipsoidTriangles.push(llVertex+1,llVertex+2,llVertex-numLongSteps+2);
+                    } // end for each latitude
+                    for (var whichLong=llVertex+2; whichLong<llVertex+numLongSteps+1; whichLong++) // north pole
+                        ellipsoidTriangles.push(whichLong,ellipsoidVertices.length/3-1,whichLong+1);
+                    ellipsoidTriangles.push(ellipsoidVertices.length/3-2,ellipsoidVertices.length/3-1,
+                                            ellipsoidVertices.length/3-numLongSteps-1); // longitude wrap
+                } // end if good number longitude steps
+    
+                // for(var i = 0;i<ellipsoidTriangles.length;i+=3){
+                //     for(var j=0;j<ellipsoidTriangles.length-5;j+=3){
+                //         var jz = findMedians(ellipsoidVertices[(ellipsoidTriangles[j]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+1]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+2]*3)+2]);
+                //         var iz = findMedians(ellipsoidVertices[(ellipsoidTriangles[j+3]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+4]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+5]*3)+2]);                    
+                //         if(iz < jz) {
+                //              var temp = ellipsoidTriangles[j];
+                //              ellipsoidTriangles[j] = ellipsoidTriangles[j+3];
+                //              ellipsoidTriangles[j+3] = temp;
+    
+                //              temp = ellipsoidTriangles[j+1];
+                //              ellipsoidTriangles[j+1] = ellipsoidTriangles[j+4];
+                //              ellipsoidTriangles[j+4] = temp;
+    
+                //              temp = ellipsoidTriangles[j+2];
+                //              ellipsoidTriangles[j+2] = ellipsoidTriangles[j+5];
+                //              ellipsoidTriangles[j+5] = temp;
+                //         }
+                //     }
+                // }
+                return({vertices:ellipsoidVertices, normals:ellipsoidNormals, texture:ellipsoidTextureCoords ,triangles:ellipsoidTriangles});
+            } // end try
+            
+            catch(e) {
+                console.log(e);
+            } // end catch
+}
+
 // read models in, load them into webgl buffers
 function loadModels() {
-
+ //   console.log("here");
     // make an ellipsoid, with numLongSteps longitudes.
     // start with a sphere of radius 1 at origin
     // Returns verts, tris and normals.
     function findMedians(z1,z2,z3){
         return (z1+z2+z3)/3;
     }
-    function makeEllipsoid(currEllipsoid,numLongSteps) {
-
-        try {
-            if (numLongSteps % 2 != 0)
-                throw "in makeSphere: uneven number of longitude steps!";
-            else if (numLongSteps < 4)
-                throw "in makeSphere: number of longitude steps too small!";
-            else { // good number longitude steps
-            
-                
-                // make vertices
-                var ellipsoidVertices = [0,-1,0]; // vertices to return, init to south pole
-                var angleIncr = (Math.PI+Math.PI) / numLongSteps; // angular increment 
-                var latLimitAngle = angleIncr * (Math.floor(numLongSteps/4)-1); // start/end lat angle
-                var latRadius, latY; // radius and Y at current latitude
-                var u, v;
-                var ellipsoidTextureCoords = [0,-1];
-                for (var latAngle=-latLimitAngle; latAngle<=latLimitAngle; latAngle+=angleIncr) {
-                    latRadius = Math.cos(latAngle); // radius of current latitude
-                    latY = Math.sin(latAngle); // height at current latitude
-                    for (var longAngle=0; longAngle<=2*Math.PI+angleIncr; longAngle+=angleIncr){ // for each long
-                        ellipsoidVertices.push(latRadius*Math.sin(longAngle),latY,latRadius*Math.cos(longAngle));
-                        u = (longAngle / (2*Math.PI));
-                        v = (Math.PI/2 + latAngle)/ Math.PI;
-                        ellipsoidTextureCoords.push(u, v);  
-                    }
-                } // end for each latitude
-                
-                ellipsoidTextureCoords.push(0,1);
-                ellipsoidVertices.push(0,1,0); // add north pole
-                ellipsoidVertices = ellipsoidVertices.map(function(val,idx) { // position and scale ellipsoid
-                    switch (idx % 3) {
-                        case 0: // x
-                            return(val*currEllipsoid.a+currEllipsoid.x);
-                        case 1: // y
-                            return(val*currEllipsoid.b+currEllipsoid.y);
-                        case 2: // z
-                            return(val*currEllipsoid.c+currEllipsoid.z);
-                    } // end switch
-                }); 
-
-                // make normals using the ellipsoid gradient equation
-                // resulting normals are unnormalized: we rely on shaders to normalize
-                var ellipsoidNormals = ellipsoidVertices.slice(); // start with a copy of the transformed verts
-                ellipsoidNormals = ellipsoidNormals.map(function(val,idx) { // calculate each normal
-                    switch (idx % 3) {
-                        case 0: // x
-                            return(2/(currEllipsoid.a*currEllipsoid.a) * (val-currEllipsoid.x));
-                        case 1: // y
-                            return(2/(currEllipsoid.b*currEllipsoid.b) * (val-currEllipsoid.y));
-                        case 2: // z
-                            return(2/(currEllipsoid.c*currEllipsoid.c) * (val-currEllipsoid.z));
-                    } // end switch
-                }); 
-                
-                // make triangles, from south pole to middle latitudes to north pole
-                var ellipsoidTriangles = []; // triangles to return
-                for (var whichLong=1; whichLong<numLongSteps; whichLong++) // south pole
-                    ellipsoidTriangles.push(0,whichLong,whichLong+1);
-                ellipsoidTriangles.push(0,numLongSteps,1); // longitude wrap tri
-                var llVertex; // lower left vertex in the current quad
-                for (var whichLat=0; whichLat<(numLongSteps/2 - 2); whichLat++) { // middle lats
-                    for (var whichLong=0; whichLong<numLongSteps-1; whichLong++) {
-                        llVertex = whichLat*numLongSteps + whichLong + 1;
-                        ellipsoidTriangles.push(llVertex,llVertex+numLongSteps,llVertex+numLongSteps+1);
-                        ellipsoidTriangles.push(llVertex,llVertex+numLongSteps+1,llVertex+1);
-                    } // end for each longitude
-                    ellipsoidTriangles.push(llVertex+1,llVertex+numLongSteps+1,llVertex+2);
-                    ellipsoidTriangles.push(llVertex+1,llVertex+2,llVertex-numLongSteps+2);
-                } // end for each latitude
-                for (var whichLong=llVertex+2; whichLong<llVertex+numLongSteps+1; whichLong++) // north pole
-                    ellipsoidTriangles.push(whichLong,ellipsoidVertices.length/3-1,whichLong+1);
-                ellipsoidTriangles.push(ellipsoidVertices.length/3-2,ellipsoidVertices.length/3-1,
-                                        ellipsoidVertices.length/3-numLongSteps-1); // longitude wrap
-            } // end if good number longitude steps
-
-            // for(var i = 0;i<ellipsoidTriangles.length;i+=3){
-            //     for(var j=0;j<ellipsoidTriangles.length-5;j+=3){
-            //         var jz = findMedians(ellipsoidVertices[(ellipsoidTriangles[j]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+1]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+2]*3)+2]);
-            //         var iz = findMedians(ellipsoidVertices[(ellipsoidTriangles[j+3]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+4]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+5]*3)+2]);                    
-            //         if(iz < jz) {
-            //              var temp = ellipsoidTriangles[j];
-            //              ellipsoidTriangles[j] = ellipsoidTriangles[j+3];
-            //              ellipsoidTriangles[j+3] = temp;
-
-            //              temp = ellipsoidTriangles[j+1];
-            //              ellipsoidTriangles[j+1] = ellipsoidTriangles[j+4];
-            //              ellipsoidTriangles[j+4] = temp;
-
-            //              temp = ellipsoidTriangles[j+2];
-            //              ellipsoidTriangles[j+2] = ellipsoidTriangles[j+5];
-            //              ellipsoidTriangles[j+5] = temp;
-            //         }
-            //     }
-            // }
-            return({vertices:ellipsoidVertices, normals:ellipsoidNormals, texture:ellipsoidTextureCoords ,triangles:ellipsoidTriangles});
-        } // end try
-        
-        catch(e) {
-            console.log(e);
-        } // end catch
-    } // end make ellipsoid
-    
-    inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
+     // end make ellipsoid
+     if(inputTriangles.length == 0)
+        inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
 
     try {
         if (inputTriangles == String.null)
@@ -666,8 +721,9 @@ function loadModels() {
                 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(inputTriangles[whichSet].glTriangles),gl.STATIC_DRAW); // data in
 
             } // end for each triangle set 
-        
-            inputEllipsoids = getJSONFile(INPUT_ELLIPSOIDS_URL,"ellipsoids"); // read in the ellipsoids
+            
+            if(inputEllipsoids.length == 0)
+                inputEllipsoids = getJSONFile(INPUT_ELLIPSOIDS_URL,"ellipsoids"); // read in the ellipsoids
 
             if (inputEllipsoids == String.null)
                 throw "Unable to load ellipsoids file!";
@@ -844,7 +900,7 @@ function setupShaders() {
         vec3 colorOut = ambient + diffuse + specular; // no specular yet
         
         fragmentColor = texture2D(uSampler,vec2(vTextureCoord.s, vTextureCoord.t));
-        if(isB==0)
+        if(isB==1)
             gl_FragColor = vec4(fragmentColor.rgb*colorOut, fragmentColor.a*uAlpha);
         else
             gl_FragColor = vec4(fragmentColor.rgb, fragmentColor.a);     
@@ -934,7 +990,7 @@ function Value(dist,type,idx,alpha){
 // render the loaded model
 function renderModels() {
     updateMssileLocation();
-    startRandomMissile()
+    startRandomMissile();
     var Models = [];
     for(var i = 0; i<numTriangleSets;i++ ){
         var value = new Value(getDotProd1(inputTriangles[i]),"tri",i,inputTriangles[i].material.alpha);
@@ -1083,6 +1139,9 @@ function renderModels() {
             var ellipsoid; // the current ellipsoid and material
 
             ellipsoid = inputEllipsoids[Models[whichSet].idx];
+
+            if(ellipsoid.invisible)
+                continue;
             // define model transform, premult with pvmMatrix, feed to vertex shader
             makeModelTransform(ellipsoid);
             pvmMatrix = mat4.multiply(pvmMatrix, pvMatrix, mMatrix); // premultiply with pv matrix
