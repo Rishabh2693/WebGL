@@ -330,7 +330,7 @@ function startRandomMissile(){
             if(inputEllipsoids[i].type == 2)
                 downMissiles.push(inputEllipsoids[i]);
         } 
-    if(frameCount%50==0&&!dOver){
+    if(frameCount%100==0&&!dOver){
         var j = Math.floor(Math.random()*downMissiles.length);
         downMissiles[j].velocity_x = (downMissiles[j].target_x - downMissiles[j].x)*0.001;
         downMissiles[j].velocity_y = (0 - downMissiles[j].y)*0.001;
@@ -516,14 +516,15 @@ function updateMssileLocation(){
             if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
               }
-              if(inputEllipsoids[i].timer%20==0&&inputEllipsoids[i].timer<=200){
+              inputEllipsoids[i].ex = true;
+              if(inputEllipsoids[i].timer%20==0){
               inputEllipsoids.push({
                 x: inputEllipsoids[i].goal_x,
                 y: inputEllipsoids[i].goal_y,
                 z: 0.7,
-                a: inputEllipsoids[i].timer*.005,
-                b: inputEllipsoids[i].timer*.005,
-                c: inputEllipsoids[i].timer*.005,
+                a: inputEllipsoids[i].timer*.0015,
+                b: inputEllipsoids[i].timer*.0015,
+                c: inputEllipsoids[i].timer*.0015,
                 timer: inputEllipsoids[i].timer,
                 texture: "fire.jpg",
                 temp: true,
@@ -537,7 +538,7 @@ function updateMssileLocation(){
               loadNewEllipsoid(numEllipsoids-1);
             }
               inputEllipsoids[i].timer+=1;
-              if(inputEllipsoids[i].timer>200){
+              if(inputEllipsoids[i].timer>100){
                 inputEllipsoids[i].invisible = true;
               }
           }
@@ -550,7 +551,7 @@ function checkInteraction(){
         for(var j=0;j<numEllipsoids;j++){
             if(i!=j){
                 if(inputEllipsoids[i].texture == "fire.jpg" 
-                && inputEllipsoids[j].texture != "fire.jpg"&&!inputEllipsoids[i].invisible){
+                && inputEllipsoids[j].texture != "fire.jpg"&&!inputEllipsoids[i].invisible&&!inputEllipsoids[j].ex){
                     if(inputEllipsoids[j].x+inputEllipsoids[j].translation[0]>inputEllipsoids[i].x-inputEllipsoids[i].a&&
                     inputEllipsoids[j].x+inputEllipsoids[j].translation[0]<inputEllipsoids[i].x+inputEllipsoids[i].a&&
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]>inputEllipsoids[i].y-inputEllipsoids[i].b&&
