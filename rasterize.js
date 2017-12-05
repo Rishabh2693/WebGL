@@ -478,7 +478,7 @@ function updateMssileLocation(){
           }
            // inputEllipsoids[i].invisible = true;
         //  console.log(inputEllipsoids);
-          if(inputEllipsoids[i].velocity_x&&
+          if(!inputEllipsoids[i].invisible&&inputEllipsoids[i].velocity_x&&
             !((inputEllipsoids[i].goal_x-inputEllipsoids[i].x < inputEllipsoids[i].translation[0]+0.03)&&
             (inputEllipsoids[i].goal_x-inputEllipsoids[i].x > inputEllipsoids[i].translation[0]-0.03)&&
             (inputEllipsoids[i].goal_y-inputEllipsoids[i].y < inputEllipsoids[i].translation[1]+0.03)&&
@@ -512,18 +512,18 @@ function updateMssileLocation(){
                 numTriangleSets+=1;
             }
 
-          }else if(inputEllipsoids[i].velocity_x){
+          }else if(inputEllipsoids[i].velocity_x&&!inputEllipsoids[i].invisible){
             if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
               }
-              if(inputEllipsoids[i].timer%20==0){
+              if(inputEllipsoids[i].timer%20==0&&inputEllipsoids[i].timer<=200){
               inputEllipsoids.push({
                 x: inputEllipsoids[i].goal_x,
                 y: inputEllipsoids[i].goal_y,
                 z: 0.7,
-                a: inputEllipsoids[i].timer*.0015,
-                b: inputEllipsoids[i].timer*.0015,
-                c: inputEllipsoids[i].timer*.0015,
+                a: inputEllipsoids[i].timer*.005,
+                b: inputEllipsoids[i].timer*.005,
+                c: inputEllipsoids[i].timer*.005,
                 timer: inputEllipsoids[i].timer,
                 texture: "fire.jpg",
                 temp: true,
@@ -537,12 +537,50 @@ function updateMssileLocation(){
               loadNewEllipsoid(numEllipsoids-1);
             }
               inputEllipsoids[i].timer+=1;
-              if(inputEllipsoids[i].timer>100){
+              if(inputEllipsoids[i].timer>200){
                 inputEllipsoids[i].invisible = true;
               }
           }
       }  
 }
+
+
+function checkInteraction(){
+    for(var i=0;i<numEllipsoids;i++){
+        for(var j=0;j<numEllipsoids;j++){
+            if(i!=j){
+                if(inputEllipsoids[i].texture == "fire.jpg" 
+                && inputEllipsoids[j].texture != "fire.jpg"&&!inputEllipsoids[i].invisible){
+                    if(inputEllipsoids[j].x+inputEllipsoids[j].translation[0]>inputEllipsoids[i].x-inputEllipsoids[i].a&&
+                    inputEllipsoids[j].x+inputEllipsoids[j].translation[0]<inputEllipsoids[i].x+inputEllipsoids[i].a&&
+                    inputEllipsoids[j].y+inputEllipsoids[j].translation[1]>inputEllipsoids[i].y-inputEllipsoids[i].b&&
+                    inputEllipsoids[j].y+inputEllipsoids[j].translation[1]<inputEllipsoids[i].y+inputEllipsoids[i].b
+                    ){
+                        inputEllipsoids[j].invisible = true;
+                    }
+                }
+            }
+        }
+        for(var j=0;j<numTriangleSets;j++){
+            if(!inputEllipsoids[i].invisible&&inputEllipsoids[i].texture == "fire.jpg" 
+            && inputTriangles[j].texture != "smoke.jpg"&&inputTriangles[j].type == 3){
+                for(var k=0;k<inputTriangles[j].vertices.length;k++){
+                   // console.log(inputTriangles[j].vertices[k]);
+                    if(inputTriangles[j].vertices[k][0]+0.1>inputEllipsoids[i].x-inputEllipsoids[i].a&&
+                        inputTriangles[j].vertices[k][0]-0.1<inputEllipsoids[i].x+inputEllipsoids[i].a&&
+                        inputTriangles[j].vertices[k][1]+0.1>inputEllipsoids[i].y-inputEllipsoids[i].b&&
+                        inputTriangles[j].vertices[k][1]-0.1<inputEllipsoids[i].y+inputEllipsoids[i].b
+                        ){
+                            inputTriangles[j].invisible = true;
+                            break;
+                        }
+                }
+            }
+        }
+    }
+}
+
+
 var reached = false;
 var upMissiles = [];
 var over = false;
@@ -567,7 +605,7 @@ function mouseUp(event){
     if(upMissiles.length==0&&!over){
         for(var i = 0; i< numEllipsoids;i++){
           //  console.log(inputEllipsoids);
-            if(inputEllipsoids[i].type == 1)
+            if(inputEllipsoids[i].type == 1&&!inputEllipsoids[i].invisible)
                 upMissiles.push(inputEllipsoids[i]);
         }  
     }
@@ -1095,6 +1133,7 @@ function Value(dist,type,idx,alpha){
 }
 // render the loaded model
 function renderModels() {
+    checkInteraction();
     checkTriangles();
     updateMssileLocation();
     startRandomMissile();
