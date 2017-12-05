@@ -396,7 +396,6 @@ function loadNewTriangles(whichSet){
     // set up the triangle index array, adjusting indices across sets
     inputTriangles[whichSet].glTriangles = []; // flat index list for webgl
     triSetSizes.push(inputTriangles[whichSet].triangles.length); // number of tris in this set
-    console.log(triSetSizes);
     for (whichSetTri=0; whichSetTri<triSetSizes[triSetSizes.length-1]; whichSetTri++) {
         triToAdd = inputTriangles[whichSet].triangles[whichSetTri]; // get tri to add
         inputTriangles[whichSet].glTriangles.push(triToAdd[0],triToAdd[1],triToAdd[2]);
@@ -428,7 +427,7 @@ function loadNewEllipsoid(whichEllipsoid){
     vec3.max(maxCorner,maxCorner,maxXYZ); // update world bbox max corner
     loadTexture(inputEllipsoids[whichEllipsoid].texture,false);
     // make the ellipsoid model
-    ellipsoidModel = makeEllipsoid(ellipsoid,32);
+    ellipsoidModel = makeEllipsoid(ellipsoid,16);
    
     // send the ellipsoid vertex coords and normals to webGL
     vertexBuffers.push(gl.createBuffer()); // init empty webgl ellipsoid vertex coord buffer
@@ -474,7 +473,7 @@ function updateMssileLocation(){
     for(var i = 0; i< numEllipsoids;i++){
           if(inputEllipsoids[i].temp){
               inputEllipsoids[i].timer++;
-              if(inputEllipsoids[i].timer > 400)
+              if(inputEllipsoids[i].timer > 100)
               inputEllipsoids[i].invisible = true;
           }
            // inputEllipsoids[i].invisible = true;
@@ -488,8 +487,9 @@ function updateMssileLocation(){
              // console.log(-inputEllipsoids[i].velocity_x + " " + inputEllipsoids[i].velocity_y);
               translateModel(vec3.scale(temp,viewRight,-inputEllipsoids[i].velocity_x));
               translateModel(vec3.scale(temp,Up,inputEllipsoids[i].velocity_y));
-            //  console.log(inputTriangles.length);
-                inputTriangles.push({
+
+                if(frameCount%13 == 0){
+                    inputTriangles.push({
                     timer: 1,
                     material: 
                         {ambient: [0.0,0.2,0],
@@ -497,7 +497,7 @@ function updateMssileLocation(){
                         specular: [0.3,0.3,0.3], 
                         n: 11, 
                         alpha: 1, 
-                        texture: "fire.jpg"
+                        texture: "smoke.jpg"
                     }, 
                     vertices: [[inputEllipsoids[i].x+inputEllipsoids[i].translation[0]-0.01, inputEllipsoids[i].y+inputEllipsoids[i].translation[1]-0.01, 0.7],
                     [inputEllipsoids[i].x+inputEllipsoids[i].translation[0]-0.01, inputEllipsoids[i].y+inputEllipsoids[i].translation[1]+0.01, 0.7],
@@ -510,19 +510,20 @@ function updateMssileLocation(){
                 });
                 loadNewTriangles(numTriangleSets);
                 numTriangleSets+=1;
+            }
 
           }else if(inputEllipsoids[i].velocity_x){
             if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
               }
-              if(inputEllipsoids[i].timer%25==0){
+              if(inputEllipsoids[i].timer%20==0){
               inputEllipsoids.push({
                 x: inputEllipsoids[i].goal_x,
                 y: inputEllipsoids[i].goal_y,
                 z: 0.7,
-                a: inputEllipsoids[i].timer*.0005,
-                b: inputEllipsoids[i].timer*.0005,
-                c: inputEllipsoids[i].timer*.0005,
+                a: inputEllipsoids[i].timer*.0015,
+                b: inputEllipsoids[i].timer*.0015,
+                c: inputEllipsoids[i].timer*.0015,
                 timer: inputEllipsoids[i].timer,
                 texture: "fire.jpg",
                 temp: true,
@@ -536,7 +537,7 @@ function updateMssileLocation(){
               loadNewEllipsoid(numEllipsoids-1);
             }
               inputEllipsoids[i].timer+=1;
-              if(inputEllipsoids[i].timer>400){
+              if(inputEllipsoids[i].timer>100){
                 inputEllipsoids[i].invisible = true;
               }
           }
@@ -857,7 +858,7 @@ function loadModels() {
                     vec3.max(maxCorner,maxCorner,maxXYZ); // update world bbox max corner
                     loadTexture(inputEllipsoids[whichEllipsoid].texture,false);
                     // make the ellipsoid model
-                    ellipsoidModel = makeEllipsoid(ellipsoid,32);
+                    ellipsoidModel = makeEllipsoid(ellipsoid,16);
                    
             
                     // send the ellipsoid vertex coords and normals to webGL
@@ -1262,7 +1263,6 @@ function renderModels() {
 
             // draw a transformed instance of the ellipsoid
             gl.drawElements(gl.TRIANGLES, triSetSizes[elliIndexMap[Models[whichSet].idx]], gl.UNSIGNED_SHORT, 0); // render
-
             // make model transform, add to view project
 
         }
