@@ -566,6 +566,7 @@ function checkInteraction(){
                 }
             }
         }
+
         for(var j=0;j<numTriangleSets;j++){
             if(!inputEllipsoids[i].invisible&&inputEllipsoids[i].texture == "fire.jpg" 
             && inputTriangles[j].texture != "smoke.jpg"&&inputTriangles[j].type == 3){
@@ -634,9 +635,14 @@ function mouseUp(event){
         over = true;
 }
 var imageCanvas = null;
+
+var ctx;
+var timeNode;
 // set up the webGL environment
 function setupWebGL() {
-    
+    var textCanvas = document.getElementById("text1");
+    // make a 2D context for it
+    ctx = textCanvas.getContext("2d");
     // Set up keys
     document.onkeydown = handleKeyDown; // call this when key pressed
     document.onmousemove = mouseMove;
@@ -1138,6 +1144,7 @@ function Value(dist,type,idx,alpha){
 }
 // render the loaded model
 function renderModels() {
+    drawScore();
     checkInteraction();
     checkTriangles();
     updateMssileLocation();
@@ -1313,6 +1320,15 @@ function renderModels() {
     } // end for each triangle set
 }
 
+function drawScore() {
+    console.log(ctx);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.font = "16px Arial";
+    ctx.fillStyle = 'white';
+    ctx.fillText("Score: "+score, 5, 20);
+    
+}
+
 /* MAIN -- HERE is where execution begins after window load */
 
 function main() {
@@ -1321,5 +1337,5 @@ function main() {
   loadModels(); // load in the models from tri file
   setupShaders(); // setup the webGL shaders
   renderModels(); // draw the triangles using webGL
-  
+  drawScore();
 } // end main
