@@ -54,7 +54,7 @@ var Eye = vec3.clone(defaultEye); // eye position in world space
 var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 var viewDelta = 0; // how much to displace view with each key press
-
+var score = 0;
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -330,7 +330,7 @@ function startRandomMissile(){
             if(inputEllipsoids[i].type == 2)
                 downMissiles.push(inputEllipsoids[i]);
         } 
-    if(frameCount%100==0&&!dOver){
+    if(frameCount%200==0&&!dOver){
         var j = Math.floor(Math.random()*downMissiles.length);
         downMissiles[j].velocity_x = (downMissiles[j].target_x - downMissiles[j].x)*0.001;
         downMissiles[j].velocity_y = (0 - downMissiles[j].y)*0.001;
@@ -547,6 +547,7 @@ function updateMssileLocation(){
 
 
 function checkInteraction(){
+    console.log(score);
     for(var i=0;i<numEllipsoids;i++){
         for(var j=0;j<numEllipsoids;j++){
             if(i!=j){
@@ -557,7 +558,10 @@ function checkInteraction(){
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]>inputEllipsoids[i].y-inputEllipsoids[i].b&&
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]<inputEllipsoids[i].y+inputEllipsoids[i].b
                     ){
-                        inputEllipsoids[j].invisible = true;
+                        
+                        if(inputEllipsoids[j].texture == "miss.jpg"&&!inputEllipsoids[j].invisible)
+                            score+=50;
+                        inputEllipsoids[j].invisible = true;    
                     }
                 }
             }
