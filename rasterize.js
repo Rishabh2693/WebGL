@@ -617,8 +617,9 @@ function mouseUp(event){
     }
     var x =  event.clientX - imageCanvas.getBoundingClientRect().left ;
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
-    x = 1.7 - (x/213);
-    y = 1.7 - (y/213);  
+    x = 1.4 - (x/284.5);
+    y = 1.4 - (y/284.5); 
+      
     upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.02;
     upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.02;
     var angle = (-1*Math.atan(upMissiles[0].velocity_y/ upMissiles[0].velocity_x))+Math.PI/2;
@@ -640,7 +641,7 @@ var ctx;
 var timeNode;
 // set up the webGL environment
 function setupWebGL() {
-    var textCanvas = document.getElementById("text1");
+    var textCanvas = document.getElementById("TextCanvas");
     // make a 2D context for it
     ctx = textCanvas.getContext("2d");
     // Set up keys
