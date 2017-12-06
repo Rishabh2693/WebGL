@@ -620,6 +620,12 @@ var over = false;
 
 
 function mouseUp(event){
+    if(event.clientX < imageCanvas.getBoundingClientRect().left||
+    event.clientY < imageCanvas.getBoundingClientRect().top ||
+    event.clientX > imageCanvas.getBoundingClientRect().right ||
+    event.clientY > (imageCanvas.getBoundingClientRect().bottom*2)/3){
+       return;
+    }
     playSound("shot");
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
