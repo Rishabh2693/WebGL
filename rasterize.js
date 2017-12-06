@@ -55,6 +55,32 @@ var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 var viewDelta = 0; // how much to displace view with each key press
 var score = 0;
+var Sound = [];
+
+
+function initSound(){
+    sound.push(new Audio("shot.wav"));
+    sound.push(new Audio("explosion.wav"));
+}
+
+function playSound(id,flag)
+{
+    switch(id)
+    {
+        case "shot": sound[0].loop = flag; sound[0].play(); break;
+        case "explosion": sound[1].loop = flag; sound[1].play(); break;
+    }
+
+}
+
+function stopSound(id)
+{
+    switch(id)
+    {
+        case "shot": sound[0].pause();sound.currentTime=0 ; break;
+		case "explosion": sound[1].pause();sound.currentTime=0 ; break;        
+    }    
+}
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
