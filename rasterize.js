@@ -541,6 +541,7 @@ function updateMssileLocation(){
           }else if(inputEllipsoids[i].velocity_x&&!inputEllipsoids[i].invisible){
             if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
+                playSound("explosion")
               }
               inputEllipsoids[i].ex = true;
               if(inputEllipsoids[i].timer%20==0){
@@ -658,6 +659,7 @@ function mouseUp(event){
     upMissiles[0].goal_x = x;
     upMissiles[0].goal_y = y;
     upMissiles.shift();
+    playSound("shot");
     if(upMissiles.length == 0)
         over = true;
 }
