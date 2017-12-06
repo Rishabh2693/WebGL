@@ -61,9 +61,10 @@ var sound = [];
 function initSound(){
     sound.push(new Audio("shot.mp3"));
     sound.push(new Audio("explosion.mp3"));
+    console.log(sound[0]);
 }
 
-function playSound(id,flag)
+function playSound(id)
 {
     switch(id)
     {
@@ -574,7 +575,6 @@ function updateMssileLocation(){
 
 
 function checkInteraction(){
-    console.log(score);
     for(var i=0;i<numEllipsoids;i++){
         for(var j=0;j<numEllipsoids;j++){
             if(i!=j){
@@ -1349,7 +1349,6 @@ function renderModels() {
 }
 
 function drawScore() {
-    console.log(ctx);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.font = "16px Arial";
     ctx.fillStyle = 'white';
@@ -1360,7 +1359,7 @@ function drawScore() {
 /* MAIN -- HERE is where execution begins after window load */
 
 function main() {
-  
+  initSound();
   setupWebGL(); // set up the webGL environment
   loadModels(); // load in the models from tri file
   setupShaders(); // setup the webGL shaders
