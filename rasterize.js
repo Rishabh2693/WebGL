@@ -540,39 +540,42 @@ function updateMssileLocation(){
             }
 
           }else if(inputEllipsoids[i].velocity_x&&!inputEllipsoids[i].invisible){
-            if(!inputEllipsoids[i].timer){
-                inputEllipsoids[i].timer = 0;
-                playSound("explosion");
-              }
-              inputEllipsoids[i].ex = true;
-              if(inputEllipsoids[i].timer%20==0){
-              inputEllipsoids.push({
-                x: inputEllipsoids[i].goal_x,
-                y: inputEllipsoids[i].goal_y,
-                z: 0.7,
-                a: inputEllipsoids[i].timer*.0015,
-                b: inputEllipsoids[i].timer*.0015,
-                c: inputEllipsoids[i].timer*.0015,
-                timer: inputEllipsoids[i].timer,
-                texture: "fire.jpg",
-                temp: true,
-                ambient: [0.8,0.8,0.1],
-                diffuse: [0.8,0.8,0],
-                specular: [0.3,0.3,0.3],
-                n:5, 
-                alpha: 1
-              } ); 
-              numEllipsoids++;
-              loadNewEllipsoid(numEllipsoids-1);
-            }
-              inputEllipsoids[i].timer+=1;
-              if(inputEllipsoids[i].timer>100){
-                inputEllipsoids[i].invisible = true;
-              }
+            generateExplosion(inputEllipsoids[i])
           }
       }  
 }
 
+function generateExplosion(model){
+    if(!model.timer){
+        model.timer = 0;
+        playSound("explosion");
+      }
+      model.ex = true;
+      if(model.timer%20==0){
+      inputEllipsoids.push({
+        x: model.goal_x,
+        y: model.goal_y,
+        z: 0.7,
+        a: model.timer*.0015,
+        b: model.timer*.0015,
+        c: model.timer*.0015,
+        timer: model.timer,
+        texture: "fire.jpg",
+        temp: true,
+        ambient: [0.8,0.8,0.1],
+        diffuse: [0.8,0.8,0],
+        specular: [0.3,0.3,0.3],
+        n:5, 
+        alpha: 1
+      } ); 
+      numEllipsoids++;
+      loadNewEllipsoid(numEllipsoids-1);
+    }
+    model.timer+=1;
+      if(model.timer>100){
+        model.invisible = true;
+      }
+}
 
 function checkInteraction(){
     for(var i=0;i<numEllipsoids;i++){
@@ -588,7 +591,8 @@ function checkInteraction(){
                         
                         if(inputEllipsoids[j].texture == "miss.jpg"&&!inputEllipsoids[j].invisible)
                             score+=50;
-                        inputEllipsoids[j].invisible = true;    
+                        inputEllipsoids[j].invisible = true;  
+                      //  generateExplosion(inputEllipsoids[j]);  
                     }
                 }
             }
@@ -605,6 +609,7 @@ function checkInteraction(){
                         inputTriangles[j].vertices[k][1]-0.1<inputEllipsoids[i].y+inputEllipsoids[i].b
                         ){
                             inputTriangles[j].invisible = true;
+                          //  generateExplosion(inputTriangles[j]);
                             break;
                         }
                 }
@@ -1166,8 +1171,20 @@ function setupShaders() {
 } // end setup shaders
 
 
-
-
+var Gameflag = false;
+function checkNewLevel(){
+    flag = true;
+    for(var i=0;i<inputEllipsoids.length;i++){
+        if(inputEllipsoids[i].type==1&&!inputEllipsoids[i].invisible){
+            flag = false;
+        }
+    }
+    for(var i=0;i<inputTriangles.length;i++){
+        if(inputTriangles[i].type==3&&!inputTriangles[i].invisible){
+            flag = false;
+        }
+    }
+}
 
 
 function Value(dist,type,idx,alpha){
@@ -1178,6 +1195,7 @@ function Value(dist,type,idx,alpha){
 }
 // render the loaded model
 function renderModels() {
+    checkNewLevel();
     drawScore();
     checkInteraction();
     checkTriangles();
@@ -1356,9 +1374,17 @@ function renderModels() {
 
 function drawScore() {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.font = "16px Arial";
-    ctx.fillStyle = 'white';
-    ctx.fillText("Score: "+score, 5, 20);
+    if(!flag){
+        ctx.font = "16px Arial";
+        ctx.fillStyle = 'white';
+        ctx.fillText("Score: "+score, 5, 20);
+    }
+    else{
+        ctx.font = "50px Arial";
+        ctx.fillStyle = 'white';
+        ctx.fillText("GAME OVER", 100, 230);
+        flag = false;
+    }
     
 }
 
