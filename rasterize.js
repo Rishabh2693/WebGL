@@ -55,20 +55,20 @@ var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 var viewDelta = 0; // how much to displace view with each key press
 var score = 0;
-var Sound = [];
+var sound = [];
 
 
 function initSound(){
-    sound.push(new Audio("shot.wav"));
-    sound.push(new Audio("explosion.wav"));
+    sound.push(new Audio("shot.mp3"));
+    sound.push(new Audio("explosion.mp3"));
 }
 
 function playSound(id,flag)
 {
     switch(id)
     {
-        case "shot": sound[0].loop = flag; sound[0].play(); break;
-        case "explosion": sound[1].loop = flag; sound[1].play(); break;
+        case "shot": sound[0].play(); break;
+        case "explosion": sound[1].play(); break;
     }
 
 }
@@ -541,7 +541,7 @@ function updateMssileLocation(){
           }else if(inputEllipsoids[i].velocity_x&&!inputEllipsoids[i].invisible){
             if(!inputEllipsoids[i].timer){
                 inputEllipsoids[i].timer = 0;
-                playSound("explosion")
+                playSound("explosion");
               }
               inputEllipsoids[i].ex = true;
               if(inputEllipsoids[i].timer%20==0){
@@ -620,7 +620,7 @@ var over = false;
 
 
 function mouseUp(event){
-
+    playSound("shot");
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
     viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
@@ -659,7 +659,6 @@ function mouseUp(event){
     upMissiles[0].goal_x = x;
     upMissiles[0].goal_y = y;
     upMissiles.shift();
-    playSound("shot");
     if(upMissiles.length == 0)
         over = true;
 }
