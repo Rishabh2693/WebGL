@@ -662,6 +662,8 @@ function checkInteraction(){
                         if(!inputEllipsoids[j].phat&&(inputEllipsoids[j].texture == "billie.jpg" || inputEllipsoids[j].texture == "miss.jpg" || inputEllipsoids[j].texture == "mis.png")&&!inputEllipsoids[j].invisible){
                             if(inputEllipsoids[j].texture == "miss.jpg")
                                 score+=50;
+                            if(inputEllipsoids[j].texture == "billie.jpg")
+                                score+=150;    
                             inputEllipsoids[j].velocity_x = 0.0000001;
                             inputEllipsoids[j].velocity_y = 0;
                             inputEllipsoids[j].phat = true;
