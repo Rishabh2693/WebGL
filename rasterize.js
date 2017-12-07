@@ -9,6 +9,69 @@
 //References https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
 //http://learningwebgl.com/blog/?p=507
 /* assignment specific globals */
+
+function init(){
+    defaultEye = vec3.fromValues(0.5,0.5,-0.2); // default eye position in world space
+    defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
+    defaultUp = vec3.fromValues(0,1,0); // default view up vector
+    lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
+    lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
+    lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
+    lightPosition = vec3.fromValues(2,4,-0.5); // default light position
+    rotateTheta = Math.PI/50; // how much to rotate models by with each key press
+    
+    /* webgl and geometry data */
+    gl = null; // the all powerful gl object. It's all here folks!
+    inputTriangles = []; // the triangle data as loaded from input files
+    numTriangleSets = 0; // how many triangle sets in input scene
+    inputEllipsoids = []; // the ellipsoid data as loaded from input files
+    numEllipsoids = 0; // how many ellipsoids in the input scene
+    vNormAttribLoc;
+    samplerUniform;
+    alphaUniform;
+    vertexBuffers = []; // this contains vertex coordinate lists by set, in triples
+    normalBuffers = []; // this contains normal component lists by set, in triples
+    triSetSizes = []; // this contains the size of each triangle set
+    triangleBuffers = []; // lists of indices into vertexBuffers by set, in triples
+    textureBuffer = [];
+    triangleTexture = [];
+    ellipsoidTexture = [];
+    vertexTextureCoordBuffer = [];
+    textureCoordAttribute;
+    isB = 0;
+    /* shader parameter locations */
+    vPosAttribLoc; // where to put position for vertex shader
+    mMatrixULoc; // where to put model matrix for vertex shader
+    pvmMatrixULoc; // where to put project model view matrix for vertex shader
+    ambientULoc; // where to put ambient reflecivity for fragment shader
+    diffuseULoc; // where to put diffuse reflecivity for fragment shader
+    specularULoc; // where to put specular reflecivity for fragment shader
+    shininessULoc; // where to put specular exponent for fragment shader
+    triIndexMap = [];
+    elliIndexMap = [];
+    /* interaction variables */
+    Eye = vec3.clone(defaultEye); // eye position in world space
+    Center = vec3.clone(defaultCenter); // view direction in world space
+    Up = vec3.clone(defaultUp); // view up vector in world space
+    viewDelta = 0; // how much to displace view with each key press
+    score = 0;
+    sound = [];
+    crosshair = null
+    lastX = null;
+    lastY = null;
+    downMissiles = [];
+    frameCount = 0;
+    dOver = false;
+    reached = false;
+    upMissiles = [];
+    over = false;
+    imageCanvas = null;
+    ctx;
+    timeNode;
+    Gameflag = false;
+    levelFlag = false;
+}
+
 const INPUT_TRIANGLES_URL = "https://rishabh2693.github.io/WebGL/triangles.json"; // triangles file loc
 const INPUT_ELLIPSOIDS_URL = "https://rishabh2693.github.io/WebGL/ellipsoids.json"; // ellipsoids file loc
 var defaultEye = vec3.fromValues(0.5,0.5,-0.2); // default eye position in world space
@@ -56,7 +119,20 @@ var Up = vec3.clone(defaultUp); // view up vector in world space
 var viewDelta = 0; // how much to displace view with each key press
 var score = 0;
 var sound = [];
-
+var crosshair = null
+var lastX = null;
+var lastY = null;
+var downMissiles = [];
+var frameCount = 0;
+var dOver = false;
+var reached = false;
+var upMissiles = [];
+var over = false;
+var imageCanvas = null;
+var ctx;
+var timeNode;
+var Gameflag = false;
+var levelFlag = false;
 
 function initSound(){
     sound.push(new Audio("shot.mp3"));
@@ -282,9 +358,7 @@ function handleKeyDown(event) {
             break;
     } // end switch
 } // end handleKeyDown
-var crosshair = null
-var lastX = null;
-var lastY = null;
+
 function mouseMove(event){
    // console.log("im here 1");
    
@@ -332,9 +406,7 @@ function mouseMove(event){
     
 }
 
-var downMissiles = [];
-var frameCount = 0;
-var dOver = false;
+
 function startRandomMissile(){
     frameCount++;
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
@@ -619,11 +691,6 @@ function checkInteraction(){
 }
 
 
-var reached = false;
-var upMissiles = [];
-var over = false;
-
-
 function mouseUp(event){
     if(event.clientX < imageCanvas.getBoundingClientRect().left||
     event.clientY < imageCanvas.getBoundingClientRect().top ||
@@ -673,10 +740,7 @@ function mouseUp(event){
     if(upMissiles.length == 0)
         over = true;
 }
-var imageCanvas = null;
 
-var ctx;
-var timeNode;
 // set up the webGL environment
 function setupWebGL() {
     var textCanvas = document.getElementById("TextCanvas");
@@ -1171,7 +1235,6 @@ function setupShaders() {
 } // end setup shaders
 
 
-var Gameflag = false;
 function checkNewLevel(){
     flag = true;
     for(var i=0;i<inputEllipsoids.length;i++){
@@ -1186,6 +1249,29 @@ function checkNewLevel(){
     }
 }
 
+function checkLevel(){
+    levelFlag = true;
+    for(var i=0;i<inputEllipsoids.length;i++){
+        if(inputEllipsoids[i].type==2&&!inputEllipsoids[i].invisible){
+            levelFlag = false;
+        }
+    }
+    if(levelFlag){
+        countSleep++;
+        for(var i=0;i<inputEllipsoids.length;i++){
+            if(inputEllipsoids[i].timer){
+                inputEllipsoids[i].timer = 0;
+            }
+        }
+        for(var i=0;i<inputTriangles.length;i++){
+            if(inputTriangles[i].timer){
+                inputTriangles[i].timer = 0;
+            }
+        }
+        
+    }
+}
+
 
 function Value(dist,type,idx,alpha){
     this.dist = dist;
@@ -1195,6 +1281,7 @@ function Value(dist,type,idx,alpha){
 }
 // render the loaded model
 function renderModels() {
+    checkLevel();
     checkNewLevel();
     drawScore();
     checkInteraction();
@@ -1371,19 +1458,29 @@ function renderModels() {
         }
     } // end for each triangle set
 }
-
+var countSleep = 0;
 function drawScore() {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    if(!flag){
+    if(!flag&&!levelFlag){
         ctx.font = "16px Arial";
         ctx.fillStyle = 'white';
         ctx.fillText("Score: "+score, 5, 20);
     }
-    else{
+    else if(flag){
+        flag = false;
         ctx.font = "50px Arial";
         ctx.fillStyle = 'white';
         ctx.fillText("GAME OVER", 100, 230);
-        flag = false;
+        throw new Error("Something went badly wrong!");
+    }else{
+        ctx.font = "50px Arial";
+        ctx.fillStyle = 'white';
+        ctx.fillText("NEXT LEVEL", 100, 230);
+        if(countSleep>300){
+            countSleep = 0;
+            levelFlag = false;
+            main();
+        }
     }
     
 }
@@ -1391,6 +1488,7 @@ function drawScore() {
 /* MAIN -- HERE is where execution begins after window load */
 
 function main() {
+  init();  
   initSound();
   setupWebGL(); // set up the webGL environment
   loadModels(); // load in the models from tri file
