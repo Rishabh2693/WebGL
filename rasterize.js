@@ -54,7 +54,6 @@ function init(){
     Center = vec3.clone(defaultCenter); // view direction in world space
     Up = vec3.clone(defaultUp); // view up vector in world space
     viewDelta = 0; // how much to displace view with each key press
-    score = 0;
     sound = [];
     crosshair = null
     lastX = null;
@@ -660,8 +659,9 @@ function checkInteraction(){
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]<inputEllipsoids[i].y+inputEllipsoids[i].b
                     ){
                         
-                        if(inputEllipsoids[j].texture == "miss.jpg"&&!inputEllipsoids[j].invisible){
-                            score+=50;
+                        if((inputEllipsoids[j].texture == "miss.jpg" || inputEllipsoids[j].texture == "mis.png")&&!inputEllipsoids[j].invisible){
+                            if(inputEllipsoids[j].texture == "miss.jpg")
+                                score+=50;
                             inputEllipsoids[j].velocity_x = 0.0000001;
                             inputEllipsoids[j].velocity_y = 0;
                             inputEllipsoids[j].phat = true;
@@ -1471,7 +1471,7 @@ function drawScore() {
         ctx.font = "50px Arial";
         ctx.fillStyle = 'white';
         ctx.fillText("GAME OVER", 100, 230);
-        throw new Error("Something went badly wrong!");
+      //  throw new Error("Something went badly wrong!");
     }else{
         ctx.font = "50px Arial";
         ctx.fillStyle = 'white';
