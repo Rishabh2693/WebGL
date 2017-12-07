@@ -137,7 +137,6 @@ var levelFlag = false;
 function initSound(){
     sound.push(new Audio("shot.mp3"));
     sound.push(new Audio("explosion.mp3"));
-    console.log(sound[0]);
 }
 
 function playSound(id)
@@ -577,13 +576,12 @@ function updateMssileLocation(){
           }
            // inputEllipsoids[i].invisible = true;
         //  console.log(inputEllipsoids);
-          if(!inputEllipsoids[i].invisible&&inputEllipsoids[i].velocity_x&&
+          if(!inputEllipsoids[i].phat&&!inputEllipsoids[i].invisible&&inputEllipsoids[i].velocity_x&&
             !((inputEllipsoids[i].goal_x-inputEllipsoids[i].x < inputEllipsoids[i].translation[0]+0.03)&&
             (inputEllipsoids[i].goal_x-inputEllipsoids[i].x > inputEllipsoids[i].translation[0]-0.03)&&
             (inputEllipsoids[i].goal_y-inputEllipsoids[i].y < inputEllipsoids[i].translation[1]+0.03)&&
             (inputEllipsoids[i].goal_y-inputEllipsoids[i].y > inputEllipsoids[i].translation[1]-0.03))){
               setModel = (inputEllipsoids[i]);
-             // console.log(-inputEllipsoids[i].velocity_x + " " + inputEllipsoids[i].velocity_y);
               translateModel(vec3.scale(temp,viewRight,-inputEllipsoids[i].velocity_x));
               translateModel(vec3.scale(temp,Up,inputEllipsoids[i].velocity_y));
 
@@ -618,6 +616,7 @@ function updateMssileLocation(){
 }
 
 function generateExplosion(model){
+  //  console.log("here" + model.type);
     if(!model.timer){
         model.timer = 0;
         playSound("explosion");
@@ -625,8 +624,8 @@ function generateExplosion(model){
       model.ex = true;
       if(model.timer%20==0){
       inputEllipsoids.push({
-        x: model.goal_x,
-        y: model.goal_y,
+        x: model.x+model.translation[0],
+        y: model.y+model.translation[1],
         z: 0.7,
         a: model.timer*.0015,
         b: model.timer*.0015,
@@ -654,17 +653,19 @@ function checkInteraction(){
         for(var j=0;j<numEllipsoids;j++){
             if(i!=j){
                 if(inputEllipsoids[i].texture == "fire.jpg" 
-                && inputEllipsoids[j].texture != "fire.jpg"&&!inputEllipsoids[i].invisible&&!inputEllipsoids[j].ex){
+               &&!inputEllipsoids[i].invisible&&!inputEllipsoids[j].ex){
                     if(inputEllipsoids[j].x+inputEllipsoids[j].translation[0]>inputEllipsoids[i].x-inputEllipsoids[i].a&&
                     inputEllipsoids[j].x+inputEllipsoids[j].translation[0]<inputEllipsoids[i].x+inputEllipsoids[i].a&&
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]>inputEllipsoids[i].y-inputEllipsoids[i].b&&
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]<inputEllipsoids[i].y+inputEllipsoids[i].b
                     ){
                         
-                        if(inputEllipsoids[j].texture == "miss.jpg"&&!inputEllipsoids[j].invisible)
+                        if(inputEllipsoids[j].texture == "miss.jpg"&&!inputEllipsoids[j].invisible){
                             score+=50;
-                        inputEllipsoids[j].invisible = true;  
-                      //  generateExplosion(inputEllipsoids[j]);  
+                            inputEllipsoids[j].velocity_x = 0.0000001;
+                            inputEllipsoids[j].velocity_y = 0;
+                            inputEllipsoids[j].phat = true;
+                        } 
                     }
                 }
             }
@@ -681,7 +682,6 @@ function checkInteraction(){
                         inputTriangles[j].vertices[k][1]-0.1<inputEllipsoids[i].y+inputEllipsoids[i].b
                         ){
                             inputTriangles[j].invisible = true;
-                          //  generateExplosion(inputTriangles[j]);
                             break;
                         }
                 }
