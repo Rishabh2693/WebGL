@@ -626,9 +626,9 @@ function generateExplosion(model){
         x: model.x+model.translation[0],
         y: model.y+model.translation[1],
         z: 0.7,
-        a: model.timer*.0015,
-        b: model.timer*.0015,
-        c: model.timer*.0015,
+        a: model.timer*.0018,
+        b: model.timer*.0018,
+        c: model.timer*.0018,
         timer: model.timer,
         texture: "fire.jpg",
         temp: true,
@@ -659,7 +659,7 @@ function checkInteraction(){
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]<inputEllipsoids[i].y+inputEllipsoids[i].b
                     ){
                         
-                        if(!inputEllipsoids[j].phat&&(inputEllipsoids[j].texture == "miss.jpg" || inputEllipsoids[j].texture == "mis.png")&&!inputEllipsoids[j].invisible){
+                        if(!inputEllipsoids[j].phat&&(inputEllipsoids[j].texture == "billie.jpg" || inputEllipsoids[j].texture == "miss.jpg" || inputEllipsoids[j].texture == "mis.png")&&!inputEllipsoids[j].invisible){
                             if(inputEllipsoids[j].texture == "miss.jpg")
                                 score+=50;
                             inputEllipsoids[j].velocity_x = 0.0000001;
