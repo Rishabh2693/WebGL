@@ -659,7 +659,7 @@ function checkInteraction(){
                     inputEllipsoids[j].y+inputEllipsoids[j].translation[1]<inputEllipsoids[i].y+inputEllipsoids[i].b
                     ){
                         
-                        if((inputEllipsoids[j].texture == "miss.jpg" || inputEllipsoids[j].texture == "mis.png")&&!inputEllipsoids[j].invisible){
+                        if(!inputEllipsoids[j].phat&&(inputEllipsoids[j].texture == "miss.jpg" || inputEllipsoids[j].texture == "mis.png")&&!inputEllipsoids[j].invisible){
                             if(inputEllipsoids[j].texture == "miss.jpg")
                                 score+=50;
                             inputEllipsoids[j].velocity_x = 0.0000001;
@@ -1237,11 +1237,6 @@ function setupShaders() {
 
 function checkNewLevel(){
     flag = true;
-    for(var i=0;i<inputEllipsoids.length;i++){
-        if(inputEllipsoids[i].type==1&&!inputEllipsoids[i].invisible){
-            flag = false;
-        }
-    }
     for(var i=0;i<inputTriangles.length;i++){
         if(inputTriangles[i].type==3&&!inputTriangles[i].invisible){
             flag = false;
@@ -1465,12 +1460,14 @@ function drawScore() {
         ctx.font = "16px Arial";
         ctx.fillStyle = 'white';
         ctx.fillText("Score: "+score, 5, 20);
+        ctx.fillText("Destroy the Enemy Missiles before they destro your Cities",30,500);
     }
     else if(flag){
         flag = false;
         ctx.font = "50px Arial";
         ctx.fillStyle = 'white';
         ctx.fillText("GAME OVER", 100, 230);
+        ctx.fillText("Score: "+score, 110, 300);
       //  throw new Error("Something went badly wrong!");
     }else{
         ctx.font = "50px Arial";
