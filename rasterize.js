@@ -1134,8 +1134,15 @@ function setupShaders() {
         console.log(e);
     } // end catch
 } // end setup shaders
-
-
+var targetList = [-0.25, 0.1, 0.5, 0.9, 1.25];
+function splitMissile(){
+    for(var i=0;i<inputEllipsoids.length;i++){
+        if(inputEllipsoids[i].duplicate&&inputEllipsoids[i].y+inputEllipsoids[i].translation[1]<1&&!inputEllipsoids[i].split){
+            inputEllipsoids[i].target_x = targetList[Math.floor(Math.random()*targetList.length)];
+            inputEllipsoids[i].split = true;
+        }
+    }
+}
 function checkNewLevel(){
     flag = true;
     for(var i=0;i<inputTriangles.length;i++){
@@ -1177,6 +1184,7 @@ function Value(dist,type,idx,alpha){
 }
 // render the loaded model
 function renderModels() {
+    splitMissile();
     checkLevel();
     checkNewLevel();
     drawScore();
