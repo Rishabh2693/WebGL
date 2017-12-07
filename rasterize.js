@@ -692,6 +692,8 @@ function checkInteraction(){
 
 
 function mouseUp(event){
+    if(over)
+        return;
     if(event.clientX < imageCanvas.getBoundingClientRect().left||
     event.clientY < imageCanvas.getBoundingClientRect().top ||
     event.clientX > imageCanvas.getBoundingClientRect().right ||
@@ -724,7 +726,8 @@ function mouseUp(event){
     var y = event.clientY - imageCanvas.getBoundingClientRect().top;
     x = 1.4 - (x/284.5);
     y = 1.4 - (y/284.5); 
-      
+    while(upMissiles[0].invisible)
+        upMissiles.shift();
     upMissiles[0].velocity_x = (x-upMissiles[0].x)*0.02;
     upMissiles[0].velocity_y = (y-upMissiles[0].y)*0.02;
     var angle = (-1*Math.atan(upMissiles[0].velocity_y/ upMissiles[0].velocity_x))+Math.PI/2;
@@ -737,8 +740,10 @@ function mouseUp(event){
     upMissiles[0].goal_x = x;
     upMissiles[0].goal_y = y;
     upMissiles.shift();
-    if(upMissiles.length == 0)
+    if(upMissiles.length == 0){
         over = true;
+        console.log("here");
+    }
 }
 
 // set up the webGL environment
@@ -1460,7 +1465,7 @@ function drawScore() {
         ctx.font = "16px Arial";
         ctx.fillStyle = 'white';
         ctx.fillText("Score: "+score, 5, 20);
-        ctx.fillText("Destroy the Enemy Missiles before they destro your Cities",30,500);
+        ctx.fillText("Destroy the Enemy Missiles before they destroy your Cities",30,500);
     }
     else if(flag){
         flag = false;
