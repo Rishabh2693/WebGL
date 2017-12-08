@@ -451,7 +451,7 @@ function checkTriangles(){
 }
 
 function updateMssileLocation(){
-    //console.log("here");
+    
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
     viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
@@ -509,7 +509,6 @@ function updateMssileLocation(){
 }
 
 function generateExplosion(model){
-  //  console.log("here" + model.type);
     if(!model.timer){
         model.timer = 0;
         playSound("explosion");
@@ -571,7 +570,6 @@ function checkInteraction(){
             if(!inputEllipsoids[i].invisible&&inputEllipsoids[i].texture == "fire.jpg" 
             && inputTriangles[j].texture != "smoke.jpg"&&inputTriangles[j].type == 3){
                 for(var k=0;k<inputTriangles[j].vertices.length;k++){
-                   // console.log(inputTriangles[j].vertices[k]);
                     if(inputTriangles[j].vertices[k][0]+0.1>inputEllipsoids[i].x-inputEllipsoids[i].a&&
                         inputTriangles[j].vertices[k][0]-0.1<inputEllipsoids[i].x+inputEllipsoids[i].a&&
                         inputTriangles[j].vertices[k][1]+0.1>inputEllipsoids[i].y-inputEllipsoids[i].b&&
@@ -613,7 +611,6 @@ function mouseUp(event){
     
     if(upMissiles.length==0&&!over){
         for(var i = 0; i< numEllipsoids;i++){
-          //  console.log(inputEllipsoids);
             if(inputEllipsoids[i].type == 1&&!inputEllipsoids[i].invisible)
                 upMissiles.push(inputEllipsoids[i]);
         }  
@@ -638,7 +635,6 @@ function mouseUp(event){
     upMissiles.shift();
     if(upMissiles.length == 0){
         over = true;
-        console.log("here");
     }
 }
 
@@ -797,7 +793,6 @@ function makeEllipsoid(currEllipsoid,numLongSteps) {
 
 // read models in, load them into webgl buffers
 function loadModels() {
- //   console.log("here");
     // make an ellipsoid, with numLongSteps longitudes.
     // start with a sphere of radius 1 at origin
     // Returns verts, tris and normals.
@@ -1136,8 +1131,48 @@ function setupShaders() {
 } // end setup shaders
 var targetList = [-0.25, 0.1, 0.5, 0.9, 1.25];
 function splitMissile(){
+    var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
+    lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
+    viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
+   
+    function rotateModel(axis,angle) {
+        if (inputEllipsoids[inputEllipsoids.length-1] != null) {
+            var newRotation = mat4.create();
+
+            mat4.fromRotation(newRotation,angle,axis); // get a rotation matrix around passed axis
+            vec3.transformMat4(inputEllipsoids[inputEllipsoids.length-1].xAxis,inputEllipsoids[inputEllipsoids.length-1].xAxis,newRotation); // rotate model x axis tip
+            vec3.transformMat4(inputEllipsoids[inputEllipsoids.length-1].yAxis,inputEllipsoids[inputEllipsoids.length-1].yAxis,newRotation); // rotate model y axis tip
+        } // end if there is a highlighted model
+    } // end rotate model
     for(var i=0;i<inputEllipsoids.length;i++){
-        if(inputEllipsoids[i].duplicate&&inputEllipsoids[i].y+inputEllipsoids[i].translation[1]<1&&!inputEllipsoids[i].split){
+        if(inputEllipsoids[i].duplicate&&inputEllipsoids[i].y+inputEllipsoids[i].translation[1]<1.1&&!inputEllipsoids[i].split){
+            var new_target = targetList[Math.floor(Math.random()*targetList.length)];
+            inputEllipsoids.push({
+                x: inputEllipsoids[i].x+inputEllipsoids[i].translation[0],
+                y: inputEllipsoids[i].y+inputEllipsoids[i].translation[1],
+                z: inputEllipsoids[i].z,
+                a: 0.01,
+                b: 0.05,
+                c: 0.01,
+                texture: "miss.jpg",
+                ambient: [0.1,0.1,0.1],
+                diffuse: [0,0,0.6],
+                specular: [0.3,0.3,0.3],
+                n:5, 
+                alpha: 1,
+                target_x: new_target,
+                velocity_x: (new_target - (inputEllipsoids[i].x+inputEllipsoids[i].translation[0]))*0.001,
+                velocity_y: (0 - (inputEllipsoids[i].y+inputEllipsoids[i].translation[1]))*0.001,
+                goal_x: new_target,
+                goal_y: 0,
+              } ); 
+            var angle = (-1*Math.atan(inputEllipsoids[inputEllipsoids.length-1].velocity_y/ inputEllipsoids[inputEllipsoids.length-1].velocity_x))+Math.PI/2;
+            if(angle>Math.PI/2){
+                angle+=Math.PI;
+            }  
+            numEllipsoids++;
+            loadNewEllipsoid(numEllipsoids-1);
+            rotateModel(lookAt,angle);    
             inputEllipsoids[i].target_x = targetList[Math.floor(Math.random()*targetList.length)];
             inputEllipsoids[i].split = true;
         }
