@@ -39,19 +39,19 @@
 
 {"x": 0.125, "y": 1.6, "z": 0.70, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":0.2,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
-{"x": 0.2825, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":0.8,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
+{"x": 0.2825, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2, "duplicate":true, "target_x":0.8,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
 {"x": 0.3525, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":-0.26,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
 {"x": 0.485, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":0.55,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
-{"x": 0.5625, "y": 1.6, "z": 0.70, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":1.27,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
+{"x": 0.5625, "y": 1.6, "z": 0.70, "a":0.01, "b":0.05, "c":0.01,"type":2, "duplicate":true,"target_x":1.27,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
 {"x": 0.6025, "y": 1.6, "z": 0.70, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":0.1,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
 {"x": 0.7125, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2, "target_x":0.9,"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
-{"x": 0.9825, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2,"target_x":1.25, "ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
+{"x": 0.9825, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2, "duplicate":true,"target_x":1.25, "ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
 
 {"x": 1.0525, "y": 1.6, "z": 0.7, "a":0.01, "b":0.05, "c":0.01,"type":2,"target_x":-0.28, "ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.0,0.6], "specular": [0.3,0.3,0.3], "n":5, "alpha": 1, "texture": "miss.jpg"},
   
