@@ -2,7 +2,8 @@
 /**
  * @author Rishabh Sinha
  * rsinha2
- * Program3
+ * Program4
+ * Created by adding game features to the already created webgl rendering functionality in program 3
  */
 
 
@@ -752,25 +753,6 @@ function makeEllipsoid(currEllipsoid,numLongSteps) {
                                             ellipsoidVertices.length/3-numLongSteps-1); // longitude wrap
                 } // end if good number longitude steps
     
-                // for(var i = 0;i<ellipsoidTriangles.length;i+=3){
-                //     for(var j=0;j<ellipsoidTriangles.length-5;j+=3){
-                //         var jz = findMedians(ellipsoidVertices[(ellipsoidTriangles[j]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+1]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+2]*3)+2]);
-                //         var iz = findMedians(ellipsoidVertices[(ellipsoidTriangles[j+3]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+4]*3)+2],ellipsoidVertices[(ellipsoidTriangles[j+5]*3)+2]);                    
-                //         if(iz < jz) {
-                //              var temp = ellipsoidTriangles[j];
-                //              ellipsoidTriangles[j] = ellipsoidTriangles[j+3];
-                //              ellipsoidTriangles[j+3] = temp;
-    
-                //              temp = ellipsoidTriangles[j+1];
-                //              ellipsoidTriangles[j+1] = ellipsoidTriangles[j+4];
-                //              ellipsoidTriangles[j+4] = temp;
-    
-                //              temp = ellipsoidTriangles[j+2];
-                //              ellipsoidTriangles[j+2] = ellipsoidTriangles[j+5];
-                //              ellipsoidTriangles[j+5] = temp;
-                //         }
-                //     }
-                // }
                 return({vertices:ellipsoidVertices, normals:ellipsoidNormals, texture:ellipsoidTextureCoords ,triangles:ellipsoidTriangles});
             } // end try
             
@@ -1266,14 +1248,11 @@ function renderModels() {
     
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
     
-    // set up projection and view
-    // mat4.fromScaling(hMatrix,vec3.fromValues(-1,1,1)); // create handedness matrix
     mat4.perspective(pMatrix,0.5*Math.PI,1,0.1,10); // create projection matrix
     mat4.lookAt(vMatrix,Eye,Center,Up); // create view matrix
     mat4.multiply(pvMatrix,pvMatrix,pMatrix); // projection
     mat4.multiply(pvMatrix,pvMatrix,vMatrix); // projection * view
 
-    // render each triangle set
     var currSet; // the tri set and its material properties
     for (var whichSet=0; whichSet<numTriangleSets+numEllipsoids; whichSet++) {
         if(Models[whichSet].type == "tri"){
