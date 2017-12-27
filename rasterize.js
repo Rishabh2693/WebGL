@@ -137,6 +137,7 @@ var levelFlag = false;
 function initSound(){
     sound.push(new Audio("shot.mp3"));
     sound.push(new Audio("explosion.mp3"));
+    sound.push(new Audio("sh.m4a"));
 }
 
 function playSound(id)
@@ -1395,9 +1396,10 @@ function drawScore() {
 
 /* MAIN -- HERE is where execution begins after window load */
 
-function main() {
+function main() {  
   init();  
   initSound();
+  sound[2].play();
   setupWebGL(); // set up the webGL environment
   loadModels(); // load in the models from tri file
   setupShaders(); // setup the webGL shaders
